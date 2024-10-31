@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: ./my_flask
+      dockerfile: Dockerfile
+    volumes:
+      - ./my_flask:/app
+      - ./common:/common
+    env_file:
+      - .env
+      - .env.secrets
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+      - rabbit
+    environment:
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      RABBITMQ_HOST: rabbit
+      RABBITMQ_PORT: 5672  
+
+  db:
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+  rabbit:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"    
+      - "15672:15672" 
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+
+  email_transmitter:
+    image: ecorrouge/email-transmitter
+    environment:
+      MAILJET_API_KEY: ${MAILJET_API_KEY}
+      MAILJET_API_SECRET: ${MAILJET_API_SECRET}
+    depends_on:
+      - web
+
+volumes:
+  db_data:
+

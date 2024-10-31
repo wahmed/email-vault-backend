@@ -1,0 +1,8 @@
+Flask
+Flask-SQLAlchemy
+mysql-connector-python
+rococo
+bcrypt
+PyJWT
+Flask-CORS
+mailjet_rest
